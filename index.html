@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gold AI Analyzer</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1220;color:#eef2ff;font-family:Arial,sans-serif;padding:16px}
+main{max-width:650px;margin:auto}
+h1{color:#f5c451;font-size:25px}
+.card{background:#172338;border:1px solid #293850;border-radius:15px;padding:17px;margin:14px 0}
+.muted{color:#9eafc5;font-size:13px}
+.price{font-size:36px;font-weight:bold;margin:12px 0;color:#f5c451}
+button{background:#f5c451;color:#101827;border:0;border-radius:9px;padding:12px;font-weight:bold;width:100%;margin-top:12px}
+input{width:100%;padding:12px;border-radius:8px;border:1px solid #40516a;background:#0b1220;color:white}
+canvas{width:100%;height:180px}
+</style>
+</head>
+<body>
+<main>
+<h1>🥇 GOLD AI ANALYZER</h1>
+<p class="muted">XAU/USD · Android · Market monitor</p>
+
+<div class="card">
+<div class="muted">STATUS SUMBER DATA</div>
+<h3 id="status">Belum disambungkan</h3>
+<div class="muted">Harga spot emas dalam USD</div>
+<div class="price" id="price">--</div>
+<div class="muted" id="updated">Tiada data diterima</div>
+<button onclick="loadPrice()">Muat semula harga</button>
+</div>
+
+<div class="card">
+<h3>📈 Carta sejarah harga</h3>
+<p class="muted">Carta akan dibina apabila data sejarah tersedia.</p>
+<canvas id="chart" width="600" height="200"></canvas>
+<div class="muted" id="chartStatus">Belum menerima data sejarah.</div>
+</div>
+
+<div class="card">
+<h3>🧠 Nota analisis</h3>
+<p id="analysis">Menunggu data sebenar. Tiada signal dikeluarkan.</p>
+</div>
+
+<div class="card">
+<h3>🔌 Sambungan API</h3>
+<p class="muted">Alamat sumber data</p>
+<input id="api" value="https://xaus.com/api/v1/spot">
+<p class="muted">Jika permintaan disekat oleh pelayar, kita perlukan sumber yang membenarkan sambungan website.</p>
+<button onclick="loadPrice()">Uji sambungan</button>
+</div>
+
+<p class="muted">Paparan hanya menggunakan data yang berjaya diterima. Harga spot mungkin berbeza daripada harga broker MT5. Tiada transaksi dibuat.</p>
+</main>
+
+<script>
+async function loadPrice(){
+ const status=document.getElementById("status");
+ const price=document.getElementById("price");
+ const updated=document.getElementById("updated");
+ const analysis=document.getElementById("analysis");
+ status.textContent="Sedang menghubungi sumber data...";
+ try{
+  const url=document.getElementById("api").value.trim();
+  const response=await fetch(url,{cache:"no-store"});
+  if(!response.ok) throw Error("HTTP "+response.status);
+  const data=await response.json();
+  const p=Number(data.price);
+  if(!Number.isFinite(p)||p<=0) throw Error("Harga tidak ditemui");
+  price.textContent=p.toFixed(2)+" USD";
+  const state=data.data_state||"status tidak diketahui";
+  status.textContent="Respons diterima · "+state;
+  updated.textContent="Masa data: "+(data.as_of||data.timestamp||"tidak diberikan");
+  analysis.textContent="Harga spot berjaya diterima. Ini bukan signal BUY/SELL. Sahkan kesegaran data dan bandingkan dengan sebut harga broker.";
+ }catch(e){
+  status.textContent="Sambungan gagal";
+  price.textContent="--";
+  updated.textContent="Ralat: "+e.message;
+  analysis.textContent="Tiada data diterima oleh website. Jangan anggap harga lama sebagai harga semasa.";
+ }
+}
+</script>
+</body>
+</html>
