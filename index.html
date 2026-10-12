@@ -66,7 +66,9 @@ async function loadPrice(){
   const response=await fetch(url,{cache:"no-store"});
   if(!response.ok) throw Error("HTTP "+response.status);
   const data=await response.json();
-  const p=Number(data.price);
+  
+const p=Number(data.price ?? data.spot_usd_oz);
+  
   if(!Number.isFinite(p)||p<=0) throw Error("Harga tidak ditemui");
   price.textContent=p.toFixed(2)+" USD";
   const state=data.data_state||"status tidak diketahui";
